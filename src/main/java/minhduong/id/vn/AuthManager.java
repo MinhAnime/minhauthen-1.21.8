@@ -7,10 +7,11 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import java.io.*;
 import java.util.*;
 import java.lang.reflect.Type;
+import java.util.concurrent.*;
 
 public class AuthManager {
-    private static final Map<String, String> accounts = new HashMap<>();
-    private static final Set<String> loggedIn = new HashSet<>();
+    private static final Map<String, String> accounts = new ConcurrentHashMap<>();
+    private static final Set<String> loggedIn = Collections.synchronizedSet(new HashSet<>());
     private static final Gson gson = new Gson();
     private static File dataFile;
 
@@ -45,7 +46,7 @@ public class AuthManager {
         }
     }
 
-    public static void save(File dir){
+    public static void save(){
         try(Writer writer = new FileWriter(dataFile)){
             gson.toJson(accounts, writer);
             System.out.println("[Minhauthen] Saved " + accounts.size() + " accounts.");
@@ -56,15 +57,15 @@ public class AuthManager {
     }
 
     public static boolean register(ServerPlayerEntity player, String password){
-        String name = player.getName().getString().toLowerCase();
+        String name = player.getName().getString();
         if (accounts.containsKey(name)) return false;
         accounts.put(name, password);
-        save(dataFile.getParentFile());
+        save();
         return true;
     }
 
     public static boolean login(ServerPlayerEntity player, String password){
-        String name = player.getName().getString().toLowerCase();
+        String name = player.getName().getString();
         if (!accounts.containsKey(name)) return false;
         if (!accounts.get(name).equals(password)) return false;
         loggedIn.add(name);
@@ -72,13 +73,13 @@ public class AuthManager {
     }
 
     public static boolean isRegistered(ServerPlayerEntity player){
-        return accounts.containsKey(player.getName().getString().toLowerCase());
+        return accounts.containsKey(player.getName().getString());
     }
 
     public static boolean isLoggedIn(ServerPlayerEntity player){
-        return loggedIn.contains(player.getName().getString().toLowerCase());
+        return loggedIn.contains(player.getName().getString());
     }
     public static void logout(ServerPlayerEntity player){
-        loggedIn.remove(player.getName().getString().toLowerCase());
+        loggedIn.remove(player.getName().getString());
     }
 }
