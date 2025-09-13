@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "minhauthen",
+	"version": "${version}",
+	"name": "minhauthen",
+	"description": "This mod is authen player",
+	"authors": [
+		"Me!"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/minhauthen/icon.png",
+	"environment": "server",
+	"entrypoints": {
+		"main": [
+			"minhduong.id.vn.Minhauthen"
+		],
+		"fabric-datagen": [
+			"minhduong.id.vn.MinhauthenDataGenerator"
+		]
+	},
+	"mixins": [
+		"minhauthen.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.17.2",
+		"minecraft": "~1.21.8",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
