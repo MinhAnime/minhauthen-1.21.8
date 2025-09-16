@@ -14,17 +14,10 @@ public class Minhauthen implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		LOGGER.info("[Minhauthen] Mod initialized!");
-
 		LoadDir.register();
 		Handlelogin.register();
-
-		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-			ServerPlayerEntity player = handler.player;
-			AuthManager.logout(player);
-			LOGGER.info("[Minhauthen] Player {} logged out.", player.getName().getString());
-		});
-
 		RegisterCommand.register();
 		LoginCommand.register();
+		DisconnectHandler.register();
 	}
 }

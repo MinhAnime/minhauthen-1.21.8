@@ -3,9 +3,7 @@ package minhduong.id.vn.mixin;
 import minhduong.id.vn.AuthManager;
 import net.minecraft.network.packet.c2s.play.*;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -14,7 +12,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,9 +24,23 @@ public class ServerPlayNetworkHandlerMixin {
     private void checkLogin(ServerPlayNetworkHandler handler, CallbackInfo ci, String action) {
         String name = handler.player.getName().getString();
         if (!AuthManager.isLoggedIn(handler.player)) {
-            if(handler.player.interactionManager.getGameMode() != GameMode.ADVENTURE){
-                handler.player.changeGameMode(GameMode.ADVENTURE);
+            if(handler.player.interactionManager.getGameMode() != GameMode.SPECTATOR){
+                handler.player.changeGameMode(GameMode.SPECTATOR);
             }
+
+            // Teleport về spawn để tránh di chuyển tự do
+            var overworld = handler.player.getServer().getOverworld();
+            var pos = overworld.getSpawnPos();
+            handler.player.teleport(
+                    overworld,
+                    pos.getX() + 0.5,
+                    pos.getY(),
+                    pos.getZ() + 0.5,
+                    Set.of(),
+                    0.0f,
+                    0.0f,
+                    true);
+
             long now = System.currentTimeMillis();
             long last = lastWarn.getOrDefault(name, 0L);
             if (now - last > 3000) {
@@ -45,22 +56,7 @@ public class ServerPlayNetworkHandlerMixin {
     // Chặn di chuyển
     @Inject(method = "onPlayerMove", at = @At("HEAD"), cancellable = true)
     private void onPlayerMove(PlayerMoveC2SPacket packet, CallbackInfo ci) {
-        ServerPlayNetworkHandler handler = (ServerPlayNetworkHandler)(Object)this;
-        if (!AuthManager.isLoggedIn(handler.player)) {
-            ServerWorld overworld = Objects.requireNonNull(handler.player.getServer()).getOverworld();
-            BlockPos pos = overworld.getSpawnPos();
-            handler.player.teleport(
-                    overworld,
-                    pos.getX() + 0.5,
-                    pos.getY(),
-                    pos.getZ() +0.5,
-                    Set.of(),
-                    handler.player.getYaw(),
-                    handler.player.getPitch(),
-                    true
-            );
-            checkLogin(handler, ci, "di chuyển");
-        }
+            checkLogin((ServerPlayNetworkHandler)(Object)this, ci, "di chuyển");
     }
 
     // Chặn phá block, drop item
@@ -97,7 +93,8 @@ public class ServerPlayNetworkHandlerMixin {
     @Inject(method = "onCommandExecution", at = @At("HEAD"), cancellable = true)
     private void onCommandExecution(CommandExecutionC2SPacket packet, CallbackInfo ci) {
         String command = packet.command();
-        if (!(command.startsWith("login") || command.startsWith("register"))) {
+        String cmd = command.split(" ")[0];
+        if (!(cmd.startsWith("login") || cmd.startsWith("register"))) {
             checkLogin((ServerPlayNetworkHandler)(Object)this, ci, "dùng lệnh");
         }
     }

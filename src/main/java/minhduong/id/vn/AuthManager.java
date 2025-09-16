@@ -10,20 +10,23 @@ import java.io.*;
 import java.util.*;
 import java.lang.reflect.Type;
 import java.util.concurrent.*;
+import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class AuthManager {
     private static final Map<String, Integer> failedAttempts = new ConcurrentHashMap<>();
     private static final Map<String, String> accounts = new ConcurrentHashMap<>();
     private static final Set<String> loggedIn = ConcurrentHashMap.newKeySet();
+    private static final Map<String, PlayerLocation> lastLocations = new ConcurrentHashMap<>();
     private static final Gson gson = new Gson();
     private static File dataFile;
+    private static File locFile;
 
     public static void load(File dir) {
-        if (!dir.exists()) {
-            dir.mkdirs();
-        }
+        if (!dir.exists()) dir.mkdirs();
 
         dataFile = new File(dir, "users.json");
+        locFile = new File(dir, "last_locations.json");
+
         if (!dataFile.exists()) {
             try {
                 // tạo file rỗng
@@ -31,49 +34,89 @@ public class AuthManager {
                 try (Writer writer = new FileWriter(dataFile)) {
                     gson.toJson(new HashMap<String, String>(), writer);
                 }
-                System.out.println("[Minhauthen] Created new users.json");
+                LOGGER.info("[Minhauthen] Created new users.json");
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            return;
-        }
-
-        // Nếu file đã có thì đọc
+        }else{
         try (Reader reader = new FileReader(dataFile)) {
             Type type = new TypeToken<Map<String, String>>() {}.getType();
             Map<String, String> loaded = gson.fromJson(reader, type);
             if (loaded != null) accounts.putAll(loaded);
-            System.out.println("[Minhauthen] Loaded " + accounts.size() + " accounts.");
-        } catch (Exception e) {
+            LOGGER.info("[Minhauthen] Loaded " + accounts.size() + " accounts.");
+        }
+        catch (Exception e) {
             e.printStackTrace();
+            }
+        }
+
+        if (!locFile.exists()) {
+            try{
+                locFile.createNewFile();
+                try (Writer writer = new FileWriter(locFile)) {
+                    gson.toJson(new HashMap<String, double[]>(), writer);
+                }
+                LOGGER.info("[Minhauthen] Created new last_locations.json");
+            }catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else{
+            try (Reader reader = new FileReader(locFile)){
+                Type type = new TypeToken<Map<String, PlayerLocation>>() {}.getType();
+                Map<String, PlayerLocation> loaded = gson.fromJson(reader, type);
+                if (loaded != null) lastLocations.putAll(loaded);
+                LOGGER.info("[Minhauthen] Loaded " + lastLocations.size() + " last locations.");
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    public static void save() throws IOException {
+    public static void saveAccounts() throws IOException {
         try(Writer writer = new FileWriter(dataFile)){
             gson.toJson(accounts, writer);
-            System.out.println("[Minhauthen] Saved " + accounts.size() + " accounts.");
+            LOGGER.info("[Minhauthen] Saved " + accounts.size() + " accounts.");
         }
         catch(Exception e){
             e.printStackTrace();
         }
     }
-
-    public static void scheduleSave(MinecraftServer server){
+    public static void scheduleSaveAccounts(MinecraftServer server){
         server.execute(()->{
             try{
-                save();
+                saveAccounts();
             }
             catch(IOException e){
                 e.printStackTrace();
             }
         });
     }
+    public static void saveLocation() throws IOException {
+        try(Writer writer = new FileWriter(locFile)){
+            gson.toJson(lastLocations, writer);
+            LOGGER.info("[Minhauthen] Saved " + lastLocations.size() + " last locations.");
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+    public static void scheduleSaveLocation(MinecraftServer server){
+        server.execute(() -> {
+            try{
+                saveLocation();
+            }
+            catch (IOException e){
+                e.printStackTrace();
+            }
+        });
+    }
+
     public static boolean register(MinecraftServer server, ServerPlayerEntity player, String password){
         String name = player.getName().getString();
         if (accounts.containsKey(name)) return false;
         accounts.put(name, password);
-        scheduleSave(server);
+        scheduleSaveAccounts(server);
         return true;
     }
 
@@ -112,8 +155,16 @@ public class AuthManager {
     public static boolean isLoggedIn(ServerPlayerEntity player){
         return loggedIn.contains(player.getName().getString());
     }
-    public static void logout(ServerPlayerEntity player){
+    public static void logout(MinecraftServer server, ServerPlayerEntity player){
+        saveLastLocation(server, player);
         loggedIn.remove(player.getName().getString());
+    }
+    public static void saveLastLocation(MinecraftServer server, ServerPlayerEntity player){
+        lastLocations.put(player.getName().getString(), new PlayerLocation(player));
+        scheduleSaveLocation(server);
+    }
+    public static PlayerLocation getLastLocation(ServerPlayerEntity player){
+        return lastLocations.get(player.getName().getString());
     }
 
 }
