@@ -28,7 +28,7 @@ public class RegisterCommand {
                                             player.sendMessage(Text.of("Mật khẩu nhập lại không khớp!"), false);
                                             return 0;
                                         }
-                                        if (AuthManager.register(player, pass)) {
+                                        if (AuthManager.register(player.getServer(), player, pass)) {
                                             player.sendMessage(Text.of("Đăng ký thành công! Hãy dùng /login <password> để vào game."), false);
                                         }else {
                                             player.sendMessage(Text.of("Đăng ký thất bại."), false);

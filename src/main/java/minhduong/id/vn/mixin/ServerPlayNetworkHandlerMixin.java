@@ -3,28 +3,64 @@ package minhduong.id.vn.mixin;
 import minhduong.id.vn.AuthManager;
 import net.minecraft.network.packet.c2s.play.*;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameMode;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Mixin(ServerPlayNetworkHandler.class)
 public class ServerPlayNetworkHandlerMixin {
+    @Unique
+    private static final Map<String, Long> lastWarn = new ConcurrentHashMap<>();
 
-    private boolean checkLogin(ServerPlayNetworkHandler handler, CallbackInfo ci, String action) {
+    @Unique
+    private void checkLogin(ServerPlayNetworkHandler handler, CallbackInfo ci, String action) {
+        String name = handler.player.getName().getString();
         if (!AuthManager.isLoggedIn(handler.player)) {
-            handler.player.sendMessage(Text.of("Bạn cần /login trước khi " + action + "!"), false);
+            if(handler.player.interactionManager.getGameMode() != GameMode.ADVENTURE){
+                handler.player.changeGameMode(GameMode.ADVENTURE);
+            }
+            long now = System.currentTimeMillis();
+            long last = lastWarn.getOrDefault(name, 0L);
+            if (now - last > 3000) {
+                handler.player.sendMessage(Text.of("Bạn cần /login trước khi " + action + "!"), false);
+                lastWarn.put(name, now);
+            }
             ci.cancel();
-            return false;
+            return;
         }
-        return true;
+        lastWarn.remove(name);
     }
 
     // Chặn di chuyển
     @Inject(method = "onPlayerMove", at = @At("HEAD"), cancellable = true)
     private void onPlayerMove(PlayerMoveC2SPacket packet, CallbackInfo ci) {
-        checkLogin((ServerPlayNetworkHandler)(Object)this, ci, "di chuyển");
+        ServerPlayNetworkHandler handler = (ServerPlayNetworkHandler)(Object)this;
+        if (!AuthManager.isLoggedIn(handler.player)) {
+            ServerWorld overworld = Objects.requireNonNull(handler.player.getServer()).getOverworld();
+            BlockPos pos = overworld.getSpawnPos();
+            handler.player.teleport(
+                    overworld,
+                    pos.getX() + 0.5,
+                    pos.getY(),
+                    pos.getZ() +0.5,
+                    Set.of(),
+                    handler.player.getYaw(),
+                    handler.player.getPitch(),
+                    true
+            );
+            checkLogin(handler, ci, "di chuyển");
+        }
     }
 
     // Chặn phá block, drop item

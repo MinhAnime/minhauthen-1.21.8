@@ -20,7 +20,7 @@ public class Handlelogin {
                         player.networkHandler.disconnect(Text.of("Vào treo máy thì cút đi"));
                     }
                 });
-            }, 60, TimeUnit.SECONDS);
+            }, 30, TimeUnit.SECONDS);
         });
     }
 }

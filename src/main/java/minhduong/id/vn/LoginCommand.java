@@ -19,9 +19,6 @@ public class LoginCommand {
                                 if (AuthManager.login(player, pass)){
                                     player.sendMessage(Text.of("Đăng nhập thành công!"), false);
                                 }
-                                else{
-                                    player.sendMessage(Text.of("Sai mật khẩu hoặc chưa đăng ký."), false);
-                                }
                                 return 1;
                             })
             ));
