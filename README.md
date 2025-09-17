@@ -135,4 +135,4 @@ Mod tự quản lý các file JSON trong `config/minhauthen/`:
 ## 10. Hỗ trợ
 
 - Liên hệ tác giả qua Discord: `@m.minh_anime`  
-- Báo lỗi GitHub: [repo-link](https://github.com/minhauthen-1.21.8/minhauthen/)
+- Báo lỗi GitHub: [repo-link](https://github.com/MinhAnime/minhauthen-1.21.8)
