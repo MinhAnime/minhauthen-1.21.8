@@ -13,7 +13,6 @@ public class PlayerLocation {
     public String world;
     public double x, y, z;
     public float yaw, pitch;
-    public PlayerLocation() {}
     public PlayerLocation(ServerPlayerEntity player) {
         this.world = player.getWorld().getRegistryKey().getValue().toString();
         this.x = player.getX();

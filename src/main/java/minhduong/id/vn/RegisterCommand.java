@@ -37,6 +37,9 @@ public class RegisterCommand {
                                             player.sendMessage(Text.of("Mật khẩu nhập lại không khớp!"), false);
                                             return 0;
                                         }
+                                        if (!TokenManager.tokenExists(token)) {
+                                            player.sendMessage(Text.of(token), false);
+                                        }
                                         if (!TokenManager.isTokenValid(token)) {
                                             int attempts = failedTokenAttempts.getOrDefault(playerName, 0) + 1;
                                             failedTokenAttempts.put(playerName, attempts);
@@ -55,8 +58,9 @@ public class RegisterCommand {
                                             }
                                         }
                                         failedTokenAttempts.remove(playerName);
-                                        if (AuthManager.register(player.getServer(), player, pass)) {
-                                            TokenManager.markUsedToken(token, player.getServer());
+
+                                        if (AuthManager.register(player, pass)) {
+                                            TokenManager.markUsedToken(token);
                                             player.sendMessage(Text.of("Đăng ký thành công! Hãy dùng /login <password> để vào game."), false);
                                         }else {
                                             player.sendMessage(Text.of("Đăng ký thất bại."), false);

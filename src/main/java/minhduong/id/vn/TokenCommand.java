@@ -18,8 +18,8 @@ public class TokenCommand {
                                                 ServerCommandSource source = context.getSource();
                                                 String token = StringArgumentType.getString(context, "token");
 
-                                                if (TokenManager.addToken(token, source.getServer())) {
-                                                    TokenManager.scheduleSaveTokens(source.getServer());
+                                                if (!TokenManager.tokenExists(token)) {
+                                                    TokenManager.addToken(token);
                                                     source.sendFeedback(() -> Text.of("Token '"+token+"' đã thêm thành công!"), false);
                                                 } else {
                                                     source.sendFeedback(() -> Text.of("Token đã tồn tại!"), false);

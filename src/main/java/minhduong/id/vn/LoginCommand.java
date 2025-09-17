@@ -58,7 +58,7 @@ public class LoginCommand {
                                     }
                                     player.sendMessage(Text.of("Đăng nhập thành công!"), false);
 
-                                    player.sendMessage(Text.of("Chào mừng "+ player.getName() + " đã đến với server"), true);
+                                    player.sendMessage(Text.of("Chào mừng "+ player.getName().toString() + " đã đến với server"), true);
 
                                 }else{
                                     player.changeGameMode(GameMode.SPECTATOR);
