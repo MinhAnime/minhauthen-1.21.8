@@ -1,6 +1,6 @@
 # Minhauthen – Minecraft Fabric Auth Mod
 
-**Phiên bản:** 1.0.0  
+**Phiên bản:** 1.1.0  
 **Hỗ trợ:** Minecraft 1.21.8 + Fabric Loader  
 
 `Minhauthen` là mod quản lý **đăng ký, đăng nhập và token** cho người chơi trên server Fabric. Mod giúp bảo vệ server, đảm bảo chỉ người chơi có tài khoản hợp lệ mới thực hiện các hành động trong game.
