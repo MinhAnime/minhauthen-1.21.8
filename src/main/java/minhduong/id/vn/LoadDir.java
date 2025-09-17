@@ -5,6 +5,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import java.io.File;
 import java.nio.file.Path;
 
+import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class LoadDir {
     public static File configDir;
