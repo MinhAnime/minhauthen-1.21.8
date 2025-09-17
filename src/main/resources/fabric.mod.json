@@ -1,5 +1,5 @@
 {
-	"schemaVersion": 1,
+	"schemaVersion": 2,
 	"id": "minhauthen",
 	"version": "${version}",
 	"name": "minhauthen",
