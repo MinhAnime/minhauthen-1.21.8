@@ -17,6 +17,7 @@ public class LoadDir {
                 configDir.mkdirs();
             }
             AuthManager.load(configDir);
+            TokenManager.loadTokens();
             LOGGER.info("[Minhauthen] AuthManager loaded from " + configDir.getAbsolutePath());
         });
     }

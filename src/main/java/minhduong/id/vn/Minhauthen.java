@@ -18,6 +18,7 @@ public class Minhauthen implements ModInitializer {
 		Handlelogin.register();
 		RegisterCommand.register();
 		LoginCommand.register();
+		TokenCommand.register();
 		DisconnectHandler.register();
 	}
 }

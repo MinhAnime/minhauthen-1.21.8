@@ -21,6 +21,11 @@ public class LoginCommand {
                                 if (source.getPlayer() == null) return 0;
                                 var player = source.getPlayer();
 
+                                if (!AuthManager.isRegistered(player)) {
+                                    player.sendMessage(Text.of("Bạn chưa có tài khoản! Hãy dùng /register <password> <confirm> <token> để đăng ký."), false);
+                                    return 0;
+                                }
+
                                 if (AuthManager.isLoggedIn(player)) {
                                     player.sendMessage(Text.of("Bạn đã đăng nhập rồi!"), false);
                                     return 0;

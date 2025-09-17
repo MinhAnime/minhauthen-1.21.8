@@ -43,7 +43,7 @@ public class ServerPlayNetworkHandlerMixin {
 
             long now = System.currentTimeMillis();
             long last = lastWarn.getOrDefault(name, 0L);
-            if (now - last > 3000) {
+            if (now - last > 10000) {
                 handler.player.sendMessage(Text.of("Bạn cần /login trước khi " + action + "!"), false);
                 lastWarn.put(name, now);
             }
@@ -83,11 +83,11 @@ public class ServerPlayNetworkHandlerMixin {
         checkLogin((ServerPlayNetworkHandler)(Object)this, ci, "tương tác entity");
     }
 
-    // Chặn chat khi chưa login
-    @Inject(method = "onChatMessage", at = @At("HEAD"), cancellable = true)
-    private void onChatMessage(ChatMessageC2SPacket packet, CallbackInfo ci) {
-        checkLogin((ServerPlayNetworkHandler)(Object)this, ci, "chat");
-    }
+//    // Chặn chat khi chưa login
+//    @Inject(method = "onChatMessage", at = @At("HEAD"), cancellable = true)
+//    private void onChatMessage(ChatMessageC2SPacket packet, CallbackInfo ci) {
+//        checkLogin((ServerPlayNetworkHandler)(Object)this, ci, "chat");
+//    }
 
     // Chặn command ngoại trừ /login và /register
     @Inject(method = "onCommandExecution", at = @At("HEAD"), cancellable = true)

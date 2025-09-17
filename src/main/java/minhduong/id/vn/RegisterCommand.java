@@ -1,6 +1,7 @@
 package minhduong.id.vn;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -10,9 +11,10 @@ public class RegisterCommand {
     public static void register(){
         CommandRegistrationCallback.EVENT.register((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> {
                     commandDispatcher.register(CommandManager.literal("register")
-                            .then(CommandManager.argument("password", StringArgumentType.string())
-                                    .then(CommandManager.argument("confirm", StringArgumentType.string())
-                                    .executes(commandContext ->{
+                            .then(CommandManager.argument("token", StringArgumentType.string())
+                                    .then(CommandManager.argument("password", StringArgumentType.string())
+                                            .then(CommandManager.argument("confirm", StringArgumentType.string())
+                                                    .executes(commandContext ->{
                                         ServerCommandSource source = commandContext.getSource();
                                         if (source.getPlayer() == null) return 0;
                                         var player = source.getPlayer();
@@ -23,12 +25,18 @@ public class RegisterCommand {
                                         }
                                         String pass = StringArgumentType.getString(commandContext, "password");
                                         String confirm = StringArgumentType.getString(commandContext, "confirm");
+                                        String token = StringArgumentType.getString(commandContext, "token");
 
                                         if (!pass.equals(confirm)) {
                                             player.sendMessage(Text.of("Mật khẩu nhập lại không khớp!"), false);
                                             return 0;
                                         }
+                                        if (!TokenManager.isTokenValid(token)) {
+                                            player.sendMessage(Text.of("Token không hợp lệ hoặc đã được sử dụng!"), false);
+                                            return 0;
+                                        }
                                         if (AuthManager.register(player.getServer(), player, pass)) {
+                                            TokenManager.markUsedToken(token, player.getServer());
                                             player.sendMessage(Text.of("Đăng ký thành công! Hãy dùng /login <password> để vào game."), false);
                                         }else {
                                             player.sendMessage(Text.of("Đăng ký thất bại."), false);
@@ -36,7 +44,7 @@ public class RegisterCommand {
                                         return 1;
                                     })
                             ))
-                    );
+                    ));
                 });
     }
 }
