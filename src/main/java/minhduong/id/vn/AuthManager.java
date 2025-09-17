@@ -10,7 +10,6 @@ import java.io.*;
 import java.util.*;
 import java.lang.reflect.Type;
 import java.util.concurrent.*;
-import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class AuthManager {
     private static final Map<String, Integer> failedAttempts = new ConcurrentHashMap<>();
@@ -34,7 +33,6 @@ public class AuthManager {
                 try (Writer writer = new FileWriter(dataFile)) {
                     gson.toJson(new HashMap<String, String>(), writer);
                 }
-                LOGGER.info("[Minhauthen] Created new users.json");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -43,7 +41,6 @@ public class AuthManager {
             Type type = new TypeToken<Map<String, String>>() {}.getType();
             Map<String, String> loaded = gson.fromJson(reader, type);
             if (loaded != null) accounts.putAll(loaded);
-            LOGGER.info("[Minhauthen] Loaded " + accounts.size() + " accounts.");
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -56,7 +53,6 @@ public class AuthManager {
                 try (Writer writer = new FileWriter(locFile)) {
                     gson.toJson(new HashMap<String, double[]>(), writer);
                 }
-                LOGGER.info("[Minhauthen] Created new last_locations.json");
             }catch (IOException e) {
                 e.printStackTrace();
             }
@@ -65,7 +61,6 @@ public class AuthManager {
                 Type type = new TypeToken<Map<String, PlayerLocation>>() {}.getType();
                 Map<String, PlayerLocation> loaded = gson.fromJson(reader, type);
                 if (loaded != null) lastLocations.putAll(loaded);
-                LOGGER.info("[Minhauthen] Loaded " + lastLocations.size() + " last locations.");
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -76,7 +71,6 @@ public class AuthManager {
     public static void saveAccounts() throws IOException {
         try(Writer writer = new FileWriter(dataFile)){
             gson.toJson(accounts, writer);
-            LOGGER.info("[Minhauthen] Saved " + accounts.size() + " accounts.");
         }
         catch(Exception e){
             e.printStackTrace();
@@ -95,7 +89,6 @@ public class AuthManager {
     public static void saveLocation() throws IOException {
         try(Writer writer = new FileWriter(locFile)){
             gson.toJson(lastLocations, writer);
-            LOGGER.info("[Minhauthen] Saved " + lastLocations.size() + " last locations.");
         }
         catch(Exception e){
             e.printStackTrace();

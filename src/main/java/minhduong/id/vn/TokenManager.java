@@ -9,7 +9,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import net.minecraft.server.MinecraftServer;
 
-import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class TokenManager {
     private static final Gson gson = new Gson();
@@ -24,7 +23,6 @@ public class TokenManager {
                 try (Writer writer = new FileWriter(tokenFile)) {
                     gson.toJson(new HashMap<String, Boolean>(), writer);
                 }
-                LOGGER.info("Tokens file created");
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -33,7 +31,6 @@ public class TokenManager {
                 Type type = new TypeToken<Map<String, Boolean>>() {}.getType();
                 Map<String, Boolean> loaded = gson.fromJson(reader, type);
                 if (loaded != null) tokens.putAll(loaded);
-                LOGGER.info("Tokens loaded");
             } catch (IOException e) {
                 e.printStackTrace();
             }
