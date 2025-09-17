@@ -7,7 +7,12 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class RegisterCommand {
+    private static Map<String, Integer> failedTokenAttempts = new ConcurrentHashMap<>();
+
     public static void register(){
         CommandRegistrationCallback.EVENT.register((commandDispatcher, commandRegistryAccess, registrationEnvironment) -> {
                     commandDispatcher.register(CommandManager.literal("register")
@@ -26,15 +31,30 @@ public class RegisterCommand {
                                         String pass = StringArgumentType.getString(commandContext, "password");
                                         String confirm = StringArgumentType.getString(commandContext, "confirm");
                                         String token = StringArgumentType.getString(commandContext, "token");
+                                        String playerName = player.getName().getString();
 
                                         if (!pass.equals(confirm)) {
                                             player.sendMessage(Text.of("Mật khẩu nhập lại không khớp!"), false);
                                             return 0;
                                         }
                                         if (!TokenManager.isTokenValid(token)) {
-                                            player.sendMessage(Text.of("Token không hợp lệ hoặc đã được sử dụng!"), false);
+                                            int attempts = failedTokenAttempts.getOrDefault(playerName, 0) + 1;
+                                            failedTokenAttempts.put(playerName, attempts);
+                                            if (attempts >= 5) {
+                                                BanManager.banPlayer(
+                                                        player.getCommandSource(),
+                                                        player.getGameProfile(),
+                                                        player.getIp(),
+                                                        "Nhập sai Token quá nhiều lần"
+                                                );
+                                                failedTokenAttempts.remove(playerName);
+                                                return 0;
+                                            }else{
+                                            player.sendMessage(Text.of("Token không hợp lệ! còn "+(5 -attempts)+ " lần"), false);
                                             return 0;
+                                            }
                                         }
+                                        failedTokenAttempts.remove(playerName);
                                         if (AuthManager.register(player.getServer(), player, pass)) {
                                             TokenManager.markUsedToken(token, player.getServer());
                                             player.sendMessage(Text.of("Đăng ký thành công! Hãy dùng /login <password> để vào game."), false);
