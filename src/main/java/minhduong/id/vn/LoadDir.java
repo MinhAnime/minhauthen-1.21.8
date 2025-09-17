@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import java.io.File;
 import java.nio.file.Path;
 
-import static com.mojang.text2speech.Narrator.LOGGER;
 
 public class LoadDir {
     public static File configDir;
@@ -18,7 +17,7 @@ public class LoadDir {
             }
             AuthManager.load(configDir);
             TokenManager.loadTokens();
-            LOGGER.info("[Minhauthen] AuthManager loaded from " + configDir.getAbsolutePath());
+            System.out.println("[Minhauthen] AuthManager loaded from " + configDir.getAbsolutePath());
         });
     }
 }
