@@ -11,7 +11,7 @@ public class Minhauthen implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		LOGGER.info("[Minhauthen] Mod initialized!");
+		LOGGER.info("[Mod authen initialized!");
 		LoadDir.register();
 		Handlelogin.register();
 		RegisterCommand.register();
