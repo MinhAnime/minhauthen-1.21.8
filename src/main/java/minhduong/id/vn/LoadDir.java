@@ -5,8 +5,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import java.io.File;
 import java.nio.file.Path;
 
-import static com.mojang.text2speech.Narrator.LOGGER;
-
 public class LoadDir {
     public static File configDir;
     public static void register (){
@@ -20,6 +18,10 @@ public class LoadDir {
             TokenManager.loadTokens();
             TokenManager.startAutoSave(server);
         });
-        ServerLifecycleEvents.SERVER_STOPPED.register(TokenManager::stopAndSave);
+        ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+           AuthManager.stopAndSave(server);
+           TokenManager.stopAndSave(server);
+        });
+
     }
 }
