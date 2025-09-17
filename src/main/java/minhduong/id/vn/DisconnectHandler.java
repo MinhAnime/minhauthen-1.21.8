@@ -8,7 +8,9 @@ public class DisconnectHandler {
     public static void register(){
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             ServerPlayerEntity player = handler.player;
-            AuthManager.logout(player);
+            if (AuthManager.isLoggedIn(player)) {
+                AuthManager.logout(player);
+            }
 
         });
     }
