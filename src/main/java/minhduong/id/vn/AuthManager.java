@@ -22,6 +22,7 @@ public class AuthManager {
     private static File locFile;
 
     private static ScheduledExecutorService scheduler;
+    private static final Object saveLock = new Object();
 
     public static void load(File dir) {
         if (!dir.exists()) dir.mkdirs();
@@ -62,11 +63,13 @@ public class AuthManager {
     }
 
     public static void saveAll() throws IOException {
+        synchronized (saveLock) {
         try (Writer writer = new FileWriter(dataFile)) {
             gson.toJson(accounts, writer);
         }
         try (Writer writer = new FileWriter(locFile)) {
             gson.toJson(lastLocations, writer);
+        }
         }
     }
 
@@ -82,7 +85,10 @@ public class AuthManager {
 
     public static boolean login(ServerPlayerEntity player, String password){
 
-        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) return true;
+        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())){
+            loggedIn.add(player.getName().getString());
+            return true;
+        }
 
         String name = player.getName().getString();
         if (!accounts.containsKey(name)) return false;
@@ -118,7 +124,9 @@ public class AuthManager {
     }
 
     public static void logout(ServerPlayerEntity player){
-        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) return;
+        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) {
+            loggedIn.remove(player.getName().getString());
+        }
 
         saveLastLocation(player);
         loggedIn.remove(player.getName().getString());
@@ -135,10 +143,14 @@ public class AuthManager {
 
     // Stop scheduler và save ngay khi server tắt
     public static void stopAndSave(MinecraftServer server){
-        if (scheduler != null) scheduler.shutdownNow();
+        if (scheduler != null){
+            scheduler.shutdownNow();
+            System.out.println("[Minhauthen] Scheduler stopped.");
+        }
         server.execute(() -> {
             try {
                 saveAll();
+                System.out.println("[Minhauthen] Data saved successfully on shutdown.");
             } catch (IOException e) {
                 e.printStackTrace();
             }

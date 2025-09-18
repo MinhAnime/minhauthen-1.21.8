@@ -19,8 +19,13 @@ public class LoadDir {
             TokenManager.startAutoSave(server);
         });
         ServerLifecycleEvents.SERVER_STOPPING.register(server -> {
+            System.out.println("[MinhAuthen] Saving data before shutdown...");
            AuthManager.stopAndSave(server);
            TokenManager.stopAndSave(server);
+           System.out.println("[MinhAuthen] Data saved, shutdown complete.");
+        });
+        ServerLifecycleEvents.SERVER_STOPPED.register(server -> {
+            System.out.println("[MinhAuthen] Đã dừng hoàn toàn (STOPPED).");
         });
 
     }
