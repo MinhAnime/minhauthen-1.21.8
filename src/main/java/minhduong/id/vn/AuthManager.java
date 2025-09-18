@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.io.*;
 import java.lang.reflect.Type;
@@ -70,6 +71,9 @@ public class AuthManager {
     }
 
     public static boolean register(ServerPlayerEntity player, String password){
+
+        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) return false;
+
         String name = player.getName().getString();
         if (accounts.containsKey(name)) return false;
         accounts.put(name, password);
@@ -77,6 +81,9 @@ public class AuthManager {
     }
 
     public static boolean login(ServerPlayerEntity player, String password){
+
+        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) return true;
+
         String name = player.getName().getString();
         if (!accounts.containsKey(name)) return false;
 
@@ -111,11 +118,14 @@ public class AuthManager {
     }
 
     public static void logout(ServerPlayerEntity player){
+        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) return;
+
         saveLastLocation(player);
         loggedIn.remove(player.getName().getString());
     }
 
     public static void saveLastLocation(ServerPlayerEntity player){
+        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) return;
         lastLocations.put(player.getName().getString(), new PlayerLocation(player));
     }
 

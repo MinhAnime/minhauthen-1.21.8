@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.geysermc.floodgate.api.FloodgateApi;
 
 @Mixin(ServerPlayNetworkHandler.class)
 public class ServerPlayNetworkHandlerMixin {
@@ -23,6 +24,11 @@ public class ServerPlayNetworkHandlerMixin {
     @Unique
     private void checkLogin(ServerPlayNetworkHandler handler, CallbackInfo ci, String action) {
         String name = handler.player.getName().getString();
+
+        if (FloodgateApi.getInstance().isFloodgatePlayer(handler.player.getUuid())){
+            return;
+        }
+
         if (!AuthManager.isLoggedIn(handler.player)) {
             if(handler.player.interactionManager.getGameMode() != GameMode.SPECTATOR){
                 handler.player.changeGameMode(GameMode.SPECTATOR);
