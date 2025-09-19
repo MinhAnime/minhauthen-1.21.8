@@ -8,6 +8,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
+import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.Set;
 
@@ -35,23 +36,26 @@ public class LoginCommand {
 
                                 if (AuthManager.login(player, pass)){
                                     PlayerLocation lastloc = AuthManager.getLastLocation(player);
-                                    if (lastloc != null){
-                                        lastloc.loginTeleport(player);
-                                    }
-                                    else{
-                                        ServerWorld overworld = player.getServer().getOverworld();
-                                        BlockPos pos = overworld.getSpawnPos();
+                                    if (!FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) {
 
-                                        player.teleport(
-                                                overworld,
-                                                pos.getX() +0.5f,
-                                                pos.getY(),
-                                                pos.getZ() + 0.5f,
-                                                Set.of(),
-                                                player.getYaw(),
-                                                player.getPitch(),
-                                                false
-                                        );
+                                        if (lastloc != null){
+                                        lastloc.loginTeleport(player);
+                                        }
+                                        else{
+                                            ServerWorld overworld = player.getServer().getOverworld();
+                                            BlockPos pos = overworld.getSpawnPos();
+
+                                            player.teleport(
+                                                    overworld,
+                                                    pos.getX() +0.5f,
+                                                    pos.getY(),
+                                                    pos.getZ() + 0.5f,
+                                                    Set.of(),
+                                                    player.getYaw(),
+                                                    player.getPitch(),
+                                                    false
+                                            );
+                                            }
                                     }
                                     if (player.interactionManager.getGameMode() != GameMode.SURVIVAL){
                                         player.changeGameMode(GameMode.SURVIVAL);
@@ -61,7 +65,11 @@ public class LoginCommand {
                                     player.sendMessage(Text.of("Chào mừng "+ player.getName().toString() + " đã đến với server"), true);
 
                                 }else{
-                                    player.changeGameMode(GameMode.SPECTATOR);
+                                    if (!FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) {
+                                        player.changeGameMode(GameMode.SPECTATOR);
+                                    }else{
+                                        player.changeGameMode(GameMode.SURVIVAL);
+                                    }
                                 }
                                 return 1;
                             })

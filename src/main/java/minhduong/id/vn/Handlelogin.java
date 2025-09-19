@@ -2,6 +2,7 @@ package minhduong.id.vn;
 
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.text.Text;
+import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -16,7 +17,7 @@ public class Handlelogin {
             var player = handler.player;
             scheduler.schedule(() -> {
                 server.execute(() -> {
-                    if (!AuthManager.isLoggedIn(player)) {
+                    if (!AuthManager.isLoggedIn(player) && !FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) {
                         player.networkHandler.disconnect(Text.of("Vào treo máy thì cút đi"));
                     }
                 });

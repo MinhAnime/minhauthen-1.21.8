@@ -24,10 +24,10 @@ public class ServerPlayNetworkHandlerMixin {
     @Unique
     private void checkLogin(ServerPlayNetworkHandler handler, CallbackInfo ci, String action) {
         String name = handler.player.getName().getString();
-
-        if (FloodgateApi.getInstance().isFloodgatePlayer(handler.player.getUuid())){
+        if (FloodgateApi.getInstance().isFloodgatePlayer(handler.player.getUuid())) {
             return;
         }
+
 
         if (!AuthManager.isLoggedIn(handler.player)) {
             if(handler.player.interactionManager.getGameMode() != GameMode.SPECTATOR){

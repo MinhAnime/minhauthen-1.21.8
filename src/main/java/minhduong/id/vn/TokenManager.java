@@ -78,23 +78,24 @@ public class TokenManager {
     // Stop scheduler và save khi server tắt
     public static void stopAndSave(MinecraftServer server) {
         if (scheduler != null) {
-            scheduler.shutdownNow();
             try {
-                // Chờ tối đa 5 giây cho các task kết thúc
+                scheduler.shutdown(); // tắt mềm, chờ task hiện tại hoàn thành
                 if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
-                    System.err.println("Scheduler không tắt kịp, sẽ ép buộc dừng.");
+                    scheduler.shutdownNow(); // ép dừng nếu sau 5s chưa xong
                 }
+                System.out.println("[TokenManager] Scheduler stopped.");
             } catch (InterruptedException e) {
+                scheduler.shutdownNow();
                 Thread.currentThread().interrupt();
             }
         }
-        server.execute(() -> {
-            try {
-                saveTokens();
-                System.out.println("[TokenManager] Tokens saved on shutdown.");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+
+        try {
+            saveTokens();
+            System.out.println("[TokenManager] Tokens saved on shutdown.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
 }

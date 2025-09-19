@@ -30,8 +30,10 @@ public class AuthManager {
         dataFile = new File(dir, "users.json");
         locFile = new File(dir, "last_locations.json");
 
-        loadFile(dataFile, new TypeToken<Map<String, String>>() {}.getType(), accounts);
-        loadFile(locFile, new TypeToken<Map<String, PlayerLocation>>() {}.getType(), lastLocations);
+        loadFile(dataFile, new TypeToken<Map<String, String>>() {
+        }.getType(), accounts);
+        loadFile(locFile, new TypeToken<Map<String, PlayerLocation>>() {
+        }.getType(), lastLocations);
 
         // Khởi tạo scheduler save định kỳ 30s
         scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -64,37 +66,28 @@ public class AuthManager {
 
     public static void saveAll() throws IOException {
         synchronized (saveLock) {
-        try (Writer writer = new FileWriter(dataFile)) {
-            gson.toJson(accounts, writer);
-        }
-        try (Writer writer = new FileWriter(locFile)) {
-            gson.toJson(lastLocations, writer);
-        }
+            try (Writer writer = new FileWriter(dataFile)) {
+                gson.toJson(accounts, writer);
+            }
+            try (Writer writer = new FileWriter(locFile)) {
+                gson.toJson(lastLocations, writer);
+            }
         }
     }
 
-    public static boolean register(ServerPlayerEntity player, String password){
-
-        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) return false;
-
+    public static boolean register(ServerPlayerEntity player, String password) {
         String name = player.getName().getString();
         if (accounts.containsKey(name)) return false;
         accounts.put(name, password);
         return true; // lưu định kỳ, không cần save ngay
     }
 
-    public static boolean login(ServerPlayerEntity player, String password){
-
-        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())){
-            loggedIn.add(player.getName().getString());
-            return true;
-        }
-
+    public static boolean login(ServerPlayerEntity player, String password) {
         String name = player.getName().getString();
-        if (!accounts.containsKey(name)) return false;
 
-        if (!accounts.get(name).equals(password)){
-            int attempts = failedAttempts.getOrDefault(name, 0) +1;
+        if (!accounts.containsKey(name)) return false;
+        if (!accounts.get(name).equals(password)) {
+            int attempts = failedAttempts.getOrDefault(name, 0) + 1;
             failedAttempts.put(name, attempts);
             if (attempts >= 5) {
                 BanManager.banPlayer(
@@ -106,7 +99,7 @@ public class AuthManager {
                 failedAttempts.remove(name);
                 return false;
             } else {
-                player.sendMessage(Text.of("Sai mật khẩu! Còn "+(5 - attempts)+" lần thử"), false);
+                player.sendMessage(Text.of("Sai mật khẩu! Còn " + (5 - attempts) + " lần thử"), false);
                 return false;
             }
         }
@@ -115,45 +108,51 @@ public class AuthManager {
         return true;
     }
 
-    public static boolean isRegistered(ServerPlayerEntity player){
+    public static boolean isRegistered(ServerPlayerEntity player) {
         return accounts.containsKey(player.getName().getString());
     }
 
-    public static boolean isLoggedIn(ServerPlayerEntity player){
+    public static boolean isLoggedIn(ServerPlayerEntity player) {
         return loggedIn.contains(player.getName().getString());
     }
 
-    public static void logout(ServerPlayerEntity player){
-        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) {
-            loggedIn.remove(player.getName().getString());
-        }
-
+    public static void logout(ServerPlayerEntity player) {
         saveLastLocation(player);
         loggedIn.remove(player.getName().getString());
     }
 
-    public static void saveLastLocation(ServerPlayerEntity player){
+    public static void saveLastLocation(ServerPlayerEntity player) {
         if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) return;
         lastLocations.put(player.getName().getString(), new PlayerLocation(player));
     }
 
-    public static PlayerLocation getLastLocation(ServerPlayerEntity player){
+    public static PlayerLocation getLastLocation(ServerPlayerEntity player) {
         return lastLocations.get(player.getName().getString());
     }
 
     // Stop scheduler và save ngay khi server tắt
-    public static void stopAndSave(MinecraftServer server){
-        if (scheduler != null){
-            scheduler.shutdownNow();
+    public static void stopAndSave(MinecraftServer server) {
+        if (scheduler != null) {
+            scheduler.shutdown();
+            try {
+                if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                    scheduler.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                scheduler.shutdownNow();
+                Thread.currentThread().interrupt();
+            }
             System.out.println("[Minhauthen] Scheduler stopped.");
         }
-        server.execute(() -> {
-            try {
-                saveAll();
-                System.out.println("[Minhauthen] Data saved successfully on shutdown.");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+
+        try {
+            saveAll();
+            System.out.println("[Minhauthen] Data saved successfully on shutdown.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("[Minhauthen] Đã dừng hoàn toàn (STOPPED).");
+
     }
 }
