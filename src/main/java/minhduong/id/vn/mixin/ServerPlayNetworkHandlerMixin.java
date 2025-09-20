@@ -30,23 +30,24 @@ public class ServerPlayNetworkHandlerMixin {
 
 
         if (!AuthManager.isLoggedIn(handler.player)) {
-            if(handler.player.interactionManager.getGameMode() != GameMode.SPECTATOR){
-                handler.player.changeGameMode(GameMode.SPECTATOR);
+            if (!FloodgateApi.getInstance().isFloodgatePlayer(handler.player.getUuid())) {
+                if (handler.player.interactionManager.getGameMode() != GameMode.SPECTATOR) {
+                    handler.player.changeGameMode(GameMode.SPECTATOR);
+                }
+
+                // Teleport về spawn để tránh di chuyển tự do
+                var overworld = handler.player.getServer().getOverworld();
+                var pos = overworld.getSpawnPos();
+                handler.player.teleport(
+                        overworld,
+                        pos.getX() + 0.5,
+                        pos.getY(),
+                        pos.getZ() + 0.5,
+                        Set.of(),
+                        0.0f,
+                        0.0f,
+                        true);
             }
-
-            // Teleport về spawn để tránh di chuyển tự do
-            var overworld = handler.player.getServer().getOverworld();
-            var pos = overworld.getSpawnPos();
-            handler.player.teleport(
-                    overworld,
-                    pos.getX() + 0.5,
-                    pos.getY(),
-                    pos.getZ() + 0.5,
-                    Set.of(),
-                    0.0f,
-                    0.0f,
-                    true);
-
             long now = System.currentTimeMillis();
             long last = lastWarn.getOrDefault(name, 0L);
             if (now - last > 10000) {

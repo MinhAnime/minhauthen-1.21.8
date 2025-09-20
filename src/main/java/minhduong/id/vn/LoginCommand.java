@@ -38,16 +38,15 @@ public class LoginCommand {
                                     PlayerLocation lastloc = AuthManager.getLastLocation(player);
                                     if (!FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) {
 
-                                        if (lastloc != null){
-                                        lastloc.loginTeleport(player);
-                                        }
-                                        else{
+                                        if (lastloc != null) {
+                                            lastloc.loginTeleport(player);
+                                        } else {
                                             ServerWorld overworld = player.getServer().getOverworld();
                                             BlockPos pos = overworld.getSpawnPos();
 
                                             player.teleport(
                                                     overworld,
-                                                    pos.getX() +0.5f,
+                                                    pos.getX() + 0.5f,
                                                     pos.getY(),
                                                     pos.getZ() + 0.5f,
                                                     Set.of(),
@@ -55,10 +54,11 @@ public class LoginCommand {
                                                     player.getPitch(),
                                                     false
                                             );
-                                            }
-                                    }
-                                    if (player.interactionManager.getGameMode() != GameMode.SURVIVAL){
-                                        player.changeGameMode(GameMode.SURVIVAL);
+                                        }
+
+                                        if (player.interactionManager.getGameMode() != GameMode.SURVIVAL) {
+                                            player.changeGameMode(GameMode.SURVIVAL);
+                                        }
                                     }
                                     player.sendMessage(Text.of("Đăng nhập thành công!"), false);
 

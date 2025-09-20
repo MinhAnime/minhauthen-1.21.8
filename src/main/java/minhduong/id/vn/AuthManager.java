@@ -113,6 +113,7 @@ public class AuthManager {
     }
 
     public static boolean isLoggedIn(ServerPlayerEntity player) {
+        if (FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) return true;
         return loggedIn.contains(player.getName().getString());
     }
 
