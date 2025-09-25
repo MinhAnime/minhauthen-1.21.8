@@ -42,21 +42,24 @@ public class LoginCommand {
                                             lastloc.loginTeleport(player);
                                         } else {
                                             ServerWorld overworld = player.getServer().getOverworld();
-                                            BlockPos pos = overworld.getSpawnPos();
-
-                                            player.teleport(
-                                                    overworld,
-                                                    pos.getX() + 0.5f,
-                                                    pos.getY(),
-                                                    pos.getZ() + 0.5f,
-                                                    Set.of(),
-                                                    player.getYaw(),
-                                                    player.getPitch(),
-                                                    false
-                                            );
+                                            if (overworld != null) {
+                                                BlockPos pos = overworld.getSpawnPos();
+                                                player.teleport(
+                                                        overworld,
+                                                        pos.getX() + 0.5f,
+                                                        pos.getY(),
+                                                        pos.getZ() + 0.5f,
+                                                        Set.of(),
+                                                        player.getYaw(),
+                                                        player.getPitch(),
+                                                        false
+                                                );
+                                            } else {
+                                                player.sendMessage(Text.of("Không thể xác định thế giới để dịch chuyển!"), false);
+                                            }
                                         }
 
-                                        if (player.interactionManager.getGameMode() != GameMode.SURVIVAL) {
+                                        if (player.interactionManager != null && player.interactionManager.getGameMode() != GameMode.SURVIVAL) {
                                             player.changeGameMode(GameMode.SURVIVAL);
                                         }
                                     }
@@ -66,9 +69,13 @@ public class LoginCommand {
 
                                 }else{
                                     if (!FloodgateApi.getInstance().isFloodgatePlayer(player.getUuid())) {
-                                        player.changeGameMode(GameMode.SPECTATOR);
+                                        if (player.interactionManager != null) {
+                                            player.changeGameMode(GameMode.SPECTATOR);
+                                        }
                                     }else{
-                                        player.changeGameMode(GameMode.SURVIVAL);
+                                        if (player.interactionManager != null && player.interactionManager.getGameMode() != GameMode.SURVIVAL) {
+                                            player.changeGameMode(GameMode.SURVIVAL);
+                                        }
                                     }
                                 }
                                 return 1;
